@@ -22,6 +22,10 @@ func startMenu() tgbotapi.InlineKeyboardMarkup {
 			name: "Забрать подарок 🎁",
 			data: "get gift",
 		},
+		{
+			name: "Начать психологический тест",
+			data: "get test",
+		},
 	}
 
 	buttons := make([][]tgbotapi.InlineKeyboardButton, len(states))
@@ -92,6 +96,11 @@ func callbacks(update tgbotapi.Update) {
 
 🌺 Инструкция "5 простых шагов к обретению взаимопонимания с партнером за 7 дней, даже если без ссор не проходит и дня"
 🌺 Моя сессия-разбор 🎁`, firstName, firstName)
+	case "get test":
+		msgConfig, inlineMarkup := testQuestions(chatId)
+		msgConfig.ReplyMarkup = inlineMarkup
+		sendMessage(msgConfig)
+
 	default:
 		text = "Неизвестная команда"
 	}
@@ -108,6 +117,28 @@ func commands(update tgbotapi.Update) {
 		msg.ParseMode = "Markdown"
 		sendMessage(msg)
 	}
+}
+
+func testQuestions(chatId int64) (tgbotapi.MessageConfig, tgbotapi.InlineKeyboardMarkup) {
+	text := "Выберите один из вариантов ответа на вопрос:"
+
+	// Создаем массив вопросов
+	questions := []string{
+		"Как часто вы чувствуете усталость?",
+		// Добавьте здесь другие вопросы
+	}
+
+	// Создаем массив кнопок для каждого вопроса
+	buttons := make([][]tgbotapi.InlineKeyboardButton, len(questions))
+	for i, question := range questions {
+		buttons[i] = make([]tgbotapi.InlineKeyboardButton, 3) // Предполагаем, что у нас три варианта ответа
+		buttons[i][0] = tgbotapi.NewInlineKeyboardButtonData("Редко", "answer1_"+question)
+		buttons[i][1] = tgbotapi.NewInlineKeyboardButtonData("Иногда", "answer2_"+question)
+		buttons[i][2] = tgbotapi.NewInlineKeyboardButtonData("Часто", "answer3_"+question)
+	}
+
+	// Возвращаем текст и клавиатуру с кнопками
+	return tgbotapi.NewMessage(chatId, text), tgbotapi.NewInlineKeyboardMarkup(buttons...)
 }
 
 func sendMessage(msg tgbotapi.Chattable) {
